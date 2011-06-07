@@ -1,0 +1,25 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  
+  
+  <f:entry title="${%Delta cloud API URL}" field="apiUrl">
+    <f:textbox name="dc.apiUrl"/>
+  </f:entry>
+  <f:entry title="${%Login}" field="login">
+    <f:textbox name="dc.login"/>
+  </f:entry>
+  <f:entry title="${%Password}" field="passwd">
+    <f:password name="dc.passwd"/>
+  </f:entry>
+  <!-- div align="left">
+  	<f:validateButton title="${%Load realms, images, etc.}" progress="${%Loading...}" method="loadRealm" with="apiUrl,login,passwd" />
+  </div -->
+  
+  <f:entry title="${%Delta cloud images}">
+    <f:repeatable field="images">
+  	  <!--  st:include page="config.jelly" class="${descriptor.clazz}" / -->
+  	  <st:include page="config.jelly" class="hudson.plugins.delta_cloud.SlaveImage"/> 
+    </f:repeatable >
+  </f:entry>
+  
+  
+</j:jelly>

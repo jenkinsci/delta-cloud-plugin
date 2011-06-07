@@ -1,0 +1,69 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	
+	<table width="100%">
+
+		<f:entry title="${%Realm}" field="realm">
+			<f:select />
+		</f:entry>
+
+		<f:entry title="${%HW profile}" field="hwProfile">
+			<f:select />
+		</f:entry>
+
+		<f:entry title="${%Image}" field="dcImage">
+			<f:select />
+		</f:entry>
+
+		<f:entry title="${%Description}" field="description">
+			<f:textbox />
+		</f:entry>
+
+		<f:entry title="${%# of executors}" field="numExec">
+			<f:textbox clazz="number"/>
+		</f:entry>
+
+		<f:entry title="${%Remote FS root}" field="remoteFS">
+			<f:textbox />
+		</f:entry>
+
+		<f:entry title="${%Labels}" field="labels">
+			<f:textbox />
+		</f:entry>
+
+		<f:entry title="${%Private key name}" field="keyName">
+				<f:textbox />
+		</f:entry>
+		
+		<f:entry title="${%Private key}" field="privKey">
+			<f:textbox />
+		</f:entry>
+
+		<f:advanced>
+			<f:entry title="${%User name}" field="username">
+				<f:textbox />
+			</f:entry>
+
+			<f:entry title="${%Password}" field="password">
+				<f:textbox />
+			</f:entry>
+
+			<f:entry title="${%Port}" field="port">
+				<f:textbox clazz="number"/>
+			</f:entry>
+
+			<f:entry title="${%JVM options}" field="jvmOptions">
+				<f:textbox />
+			</f:entry>
+			
+			<f:entry title="${%Java path}" field="javaPath">
+				<f:textbox />
+			</f:entry>
+		</f:advanced>
+
+		<!-- f:entry title=""> <div align="right"> <f:repeatableDeleteButton /> 
+			</div> </f:entry -->
+
+	</table>
+
+</j:jelly>
