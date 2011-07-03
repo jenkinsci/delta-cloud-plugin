@@ -7,8 +7,8 @@ import hudson.model.Hudson;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Node.Mode;
-import hudson.plugins.sshslaves.SSHLauncher;
 import hudson.slaves.Cloud;
+import hudson.slaves.ComputerLauncher;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 
 import java.net.MalformedURLException;
@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.util.LogTaskListener;
 import org.deltacloud.Instance;
 import org.deltacloud.Realm;
 import org.deltacloud.client.DeltaCloudClient;
@@ -145,8 +146,7 @@ public class DeltaCloud extends Cloud {
 			LOGGER.info("Machine ready, address: " + instance.getPublicAddresses().toString());
 			System.out.println("Machine ready, address: " + instance.getPublicAddresses().toString());
 			System.out.println("Machine ready, address: " + instance.getPublicAddresses().getAddresses().get(0));
-			SSHLauncher launcher = new SSHLauncher(instance.getPublicAddresses().getAddresses().get(0),image.getPort(), image.getUsername(), image.getPassword(),
-					image.getPrivKey(), image.getJvmOptions(), image.getJavaPath());
+			ComputerLauncher launcher = image.getComputerConnector().launch(instance.getPublicAddresses().getAddresses().get(0),new LogTaskListener(LOGGER, Level.INFO));
 			DCRetentionStrategy strategy = new DCRetentionStrategy();
 			DCSlave slave = new DCSlave(instance, client, "DC-" + instance.getId(), "Delta cloud slave "
 					+ instance.getName(), image.getRemoteFS(), image.getNumExec(), Mode.NORMAL, "DC", launcher, strategy, new ArrayList());

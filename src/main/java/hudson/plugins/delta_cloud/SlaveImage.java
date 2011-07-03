@@ -2,9 +2,11 @@ package hudson.plugins.delta_cloud;
 
 import hudson.Extension;
 import hudson.RelativePath;
+import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
+import hudson.slaves.ComputerConnector;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
@@ -34,20 +36,11 @@ public class SlaveImage implements Describable<SlaveImage>{
 	private int numExec;
 	private String remoteFS;
 	private String labels;
-	
-	//SSH launcher config
-	private String username;
-	private String password;
 	private String keyName;
-	private String privKey;
-	private int port;
-	private String jvmOptions;
-	private String javaPath;
-	
-	
+	private final ComputerConnector computerConnector;
 	
 	@DataBoundConstructor
-	public SlaveImage(String realm, String hwProfile, String dcImage, String description, String numExec, String remoteFS, String lables, String username, String password, String keyName, String privKey, String port, String jvmOptions, String javaPath){
+	public SlaveImage(String realm, String hwProfile, String dcImage, String description, String numExec, String remoteFS, String labels, String keyName, ComputerConnector computerConnector){
 		this.realm = realm;
 		this.hwProfile = hwProfile;
 		this.dcImage = dcImage;
@@ -59,19 +52,9 @@ public class SlaveImage implements Describable<SlaveImage>{
 			this.numExec = 1;
 		}
 		this.remoteFS = remoteFS;
-		this.labels = lables;
-		
-		this.username = username;
-		this.password = password;
+		this.labels = labels;
 		this.keyName = keyName;
-		this.privKey = privKey;
-		try{
-			this.port = Integer.parseInt(port);
-		}catch(NumberFormatException e){
-			this.port = 22;
-		}
-		this.jvmOptions = jvmOptions;
-		this.javaPath = javaPath;
+		this.computerConnector = computerConnector;
 	}
 
 	public String getRealm() {
@@ -102,32 +85,12 @@ public class SlaveImage implements Describable<SlaveImage>{
 		return labels;
 	}
 
-	public String getUsername() {
-		return username;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
 	public String getKeyName(){
 		return keyName;
 	}
-	
-	public String getPrivKey() {
-		return privKey;
-	}
 
-	public int getPort() {
-		return port;
-	}
-
-	public String getJvmOptions() {
-		return jvmOptions;
-	}
-
-	public String getJavaPath() {
-		return javaPath;
+	public ComputerConnector getComputerConnector() {
+		return computerConnector;
 	}
 
 	public static Logger getLogger() {
@@ -149,6 +112,11 @@ public class SlaveImage implements Describable<SlaveImage>{
 		
 		public String getDisplayName() {
             return null;
+        }
+
+        public static List<Descriptor<ComputerConnector>> getComputerConnectorDescriptors() {
+          return Hudson.getInstance().<ComputerConnector, Descriptor<ComputerConnector>> getDescriptorList(
+              ComputerConnector.class);
         }
         
         public ListBoxModel doFillRealmItems(
