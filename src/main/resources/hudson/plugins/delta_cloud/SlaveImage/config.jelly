@@ -49,9 +49,11 @@
 			</j:forEach>
 		</f:dropdownList>
 
-		<!-- f:entry title=""> <div align="right"> <f:repeatableDeleteButton /> 
-			</div> </f:entry -->
-
+		<f:entry title="">
+    		<div align="right">
+      			<f:repeatableDeleteButton />
+    		</div>
+  		</f:entry>
 	</table>
 
 </j:jelly>
