@@ -2,7 +2,6 @@ package hudson.plugins.delta_cloud;
 
 import hudson.Extension;
 import hudson.RelativePath;
-import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -23,6 +22,7 @@ import org.deltacloud.client.DeltaCloudClient;
 import org.deltacloud.client.DeltaCloudClientException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 public class SlaveImage implements Describable<SlaveImage>{
 	
@@ -110,6 +110,8 @@ public class SlaveImage implements Describable<SlaveImage>{
 		public static List<Image> images;
 		public static boolean isLoaded;
 		
+		private static final int MAX_LOAD_ATTEMPTS = new Integer(System.getProperty("hudson.plugins.delta_cloud.max_load_attempts", "10")).intValue();
+		
 		public String getDisplayName() {
             return null;
         }
@@ -119,12 +121,12 @@ public class SlaveImage implements Describable<SlaveImage>{
               ComputerConnector.class);
         }
         
+        @JavaScriptMethod
         public ListBoxModel doFillRealmItems(
         		//TODO otestovat QueryParameter("dc.apiUrl")
         		@QueryParameter(value="dc.apiUrl") @RelativePath("..") String apiUrl, 
         		@QueryParameter(value="dc.login") @RelativePath("..") String login,
 				@QueryParameter(value="dc.passwd") @RelativePath("..") String passwd) {
-        	System.out.println("login/passwd:" + apiUrl + " " + login + " " + passwd);
 			ListBoxModel model = new ListBoxModel();
 			if(!isLoaded) {
 				loadApi(apiUrl, login, passwd);
@@ -135,6 +137,7 @@ public class SlaveImage implements Describable<SlaveImage>{
 			return model;
 		}
         
+        @JavaScriptMethod
         public ListBoxModel doFillHwProfileItems(
         		//TODO otestovat QueryParameter("dc.apiUrl")
         		@QueryParameter(value="dc.apiUrl") @RelativePath("..") String apiUrl, 
@@ -150,34 +153,42 @@ public class SlaveImage implements Describable<SlaveImage>{
 			return model;
 		}
         
+        @JavaScriptMethod
 		public ListBoxModel doFillDcImageItems(
 				@QueryParameter(value="dc.apiUrl") @RelativePath("..") String apiUrl, 
 				@QueryParameter(value="dc.login") @RelativePath("..") String login,
 				@QueryParameter(value="dc.passwd") @RelativePath("..") String passwd) {
-			System.out.println("skutecne v dcImageItems");
-			System.out.println("api/login/passwd:" + apiUrl + " " + login + " " + passwd);
 			ListBoxModel model = new ListBoxModel();
-			if (isLoaded) {
+			if(!isLoaded) {
 				loadApi(apiUrl, login, passwd);
 			}
-			System.out.println("Filling images: " + images);
 			for (Image image : images) {
 				model.add(image.getName(), image.getId());
 			}
 			return model;
 		}
 		
-		private FormValidation loadApi(String apiUrl, String login, String passwd) {
+		private synchronized FormValidation loadApi(String apiUrl, String login, String passwd) {
 			try {
 				URL deltaCloudURL = new URL(apiUrl);
 				client = new DeltaCloudClient(deltaCloudURL, login, passwd);
-				realms = client.listRealms();
-				hwProfiles = client.listHardwareProfiles();
-				images = client.listImages();
-				System.out.println("realms: " + realms);
-				System.out.println("hw profiles: " + hwProfiles);
-				System.out.println("images: " + images);
+				loadDcApi(client);
+				int attempts = 0;
+				//loading values from DC API fails quite often, try to load several times while not all values loaded
+				while(realms == null || hwProfiles == null || images == null){
+					LOGGER.info("Loading Delta cloud API failed, trying again");
+					loadDcApi(client);
+					attempts++;
+					if(attempts > MAX_LOAD_ATTEMPTS){
+						LOGGER.severe("MAX_LOAD_ATTEMPTS tries to load DC API reached, but API still not loaded, giving up...");
+						return FormValidation.error("Cannot load values from DC API");
+					}
+				}
 				isLoaded = true;
+				LOGGER.info("DC API loaded");
+				LOGGER.fine("DC Realms: " + realms);
+				LOGGER.fine("DC HW Profiles: " + hwProfiles);
+				LOGGER.fine("DC Images: " + images);
 			} catch (MalformedURLException e) {
 				LOGGER.log(Level.WARNING, "Fails to create Delta cloud client, malformaed URL", e);
 				e.printStackTrace();
@@ -189,6 +200,15 @@ public class SlaveImage implements Describable<SlaveImage>{
 			return FormValidation.ok("Succefully loaded");
 		}
         
+		private void loadDcApi(DeltaCloudClient client) throws DeltaCloudClientException{
+			//in case of repeated loading, load just missing values 
+			if(realms != null)
+				realms = client.listRealms();
+			if(hwProfiles == null)
+				hwProfiles = client.listHardwareProfiles();
+			if(images == null)
+				images = client.listImages();
+		}
 	}
 	
 	private static final Logger LOGGER = Logger.getLogger(DeltaCloud.class.getName());
