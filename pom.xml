@@ -10,7 +10,7 @@
 
 	<!-- groupId>hudson.plugins.delta-cloud</groupId -->
 	<artifactId>delta-cloud</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>hpi</packaging>
 
 	<dependencies>
