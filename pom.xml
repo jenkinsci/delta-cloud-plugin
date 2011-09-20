@@ -10,7 +10,7 @@
 
 	<!-- groupId>hudson.plugins.delta-cloud</groupId -->
 	<artifactId>delta-cloud</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	 <url>https://wiki.jenkins-ci.org/display/JENKINS/Delta+Cloud+API+plugin</url>
 
